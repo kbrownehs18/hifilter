@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="hifilter",
-    version="0.1.0",
+    version="0.2.0",
     author="last911",
     author_email="",
     description="image filter lib",
