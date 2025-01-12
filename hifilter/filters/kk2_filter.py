@@ -28,9 +28,18 @@ class KK2Filter(HiFilter):
         self.img = enhancer.enhance(1.2)  # 增加亮度
 
         # 增加暖色调（通过调整 RGB 通道）
-        r, g, b = self.img.split()
-        r = r.point(lambda x: x * 1.2)  # 增强红色通道
-        b = b.point(lambda x: x * 0.8)  # 减弱蓝色通道
-        self.img = Image.merge("RGB", (r, g, b))
+        self.channels = self.split_channels()
+        # rgba
+        self.modify_channel(
+            0, lambda c: self._modify_channel(c, 1.2)
+        )
+        self.modify_channel(
+            2, lambda c: self._modify_channel(c, 0.8)
+        )
+        self.merge_channels()
+        # r, g, b = self.img.split()
+        # r = r.point(lambda x: x * 1.2)  # 增强红色通道
+        # b = b.point(lambda x: x * 0.8)  # 减弱蓝色通道
+        # self.img = Image.merge("RGB", (r, g, b))
 
         return self.img
