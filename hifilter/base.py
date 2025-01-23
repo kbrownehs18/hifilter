@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from importlib.resources import path as resource_path
+
+import cv2
+import numpy as np
+import onnxruntime as ort
 from PIL import Image, ImageFile
 
 
@@ -107,3 +112,68 @@ class HiFilter(object):
 
     def _modify_channel(self, channel, value: float):
         return channel.point(lambda x: x * value)
+
+
+class AIFilter(HiFilter):
+    """
+    AI model filter
+    """
+
+    def __init__(self, name: str, model: str):
+        """
+        onnx 模型名称
+        """
+        super().__init__(name)
+        self.model = model  # 模型名称
+        self._size = None
+        self._image = None
+
+    def _process_image(self, img: np.ndarray, model_name):
+        h, w = img.shape[:2]
+
+        # resize image to multiple of 8s
+        def to_8s(x):
+            # If using the tiny model, the multiple should be 16 instead of 8.
+            if "tiny" in model_name:
+                return 256 if x < 256 else x - x % 16
+            else:
+                return 256 if x < 256 else x - x % 8
+
+        img = cv2.resize(img, (to_8s(w), to_8s(h)))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 127.5 - 1.0
+
+        return img
+
+    def effect(self):
+        with resource_path("hifilter.filters.models", self.model) as model_path:
+            session = ort.InferenceSession(
+                str(model_path),
+                providers=[
+                    "CPUExecutionProvider",
+                ],
+            )
+            x = session.get_inputs()[0].name
+
+            img0 = cv2.imread(self.img).astype(np.float32)
+            img = self._process_image(img0, self.model)
+            img = np.expand_dims(img, axis=0)
+
+            sample_image, shape = img, img0.shape
+            handled_img = session.run(None, {x: sample_image})
+
+            self._image = handled_img[0]
+            self._size = (shape[1], shape[0])
+
+    def handle(self, image_file: str) -> any:
+        """
+        filter image
+        """
+        self.img = image_file
+
+        return self.effect()
+
+    def save(self, image_path: str = ""):
+        image = (np.squeeze(self._image) + 1.0) / 2 * 255
+        image = np.clip(image, 0, 255).astype(np.uint8)
+        image = cv2.resize(image, self._size)
+        cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
