@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
 from setuptools import find_packages, setup
 
 setup(
@@ -22,5 +23,5 @@ setup(
     python_requires=">=3.10",
     install_requires=["pillow", "opencv-python", "numpy", "onnx", "onnxruntime"],
     include_package_data=True,
-    package_data={"hifilter": ["filters/models/*.onnx", "thirdparty/models/*"]},
+    package_data={},
 )

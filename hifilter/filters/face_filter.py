@@ -33,9 +33,10 @@ class FaceFilter(AIFilter):
         """
         use model to process image
         """
-        algo = Cartoonizer(
-            dataroot=os.path.join(_thirdparty_path, "models", self.model)
-        )
+        model_path = os.environ.get("MODEL_PATH")
+        if model_path is None:
+            raise ValueError("MODEL_PATH is not set")
+        algo = Cartoonizer(dataroot=os.path.join(model_path, self.model))
         img = cv2.imread(self.img)
         img0 = img.astype(np.float32)
         shape = img0.shape
