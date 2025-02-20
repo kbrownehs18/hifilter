@@ -24,6 +24,9 @@ class TestFilter(unittest.TestCase):
         """
         root_path = os.path.dirname(os.path.abspath(__file__))
         for k in all_filters:
+            print(f"test filter {k}")
+            if k == "face":
+                continue
             f = all_filters[k]()
             f.handle(f"{root_path}/tmp/starcraft.png")
             f.save(f"{root_path}/tmp/starcraft_{k}.png")

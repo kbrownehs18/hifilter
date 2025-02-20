@@ -1,0 +1,2 @@
+include hifilter/thirdparty/*
+recursive-include hifilter/thirdparty *
