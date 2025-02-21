@@ -1,3 +1,6 @@
 recursive-include hifilter/filters/models *
+recursive-include hifilter/thirdparty *
 global-exclude .DS_Store
 global-exclude .gitignore
+global-exclude __pycache__
+global-exclude *.pyc
